@@ -1,0 +1,9 @@
+.loader {
+  margin-right: auto;
+  margin-left: auto;
+}
+.text {
+  font-weight: 700;
+  color: blue;
+  text-transform: uppercase;
+}

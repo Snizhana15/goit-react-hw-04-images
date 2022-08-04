@@ -1,65 +1,76 @@
 import React, { Component } from 'react';
-import ContactForm from '../ContactForm/ContactForm';
-import Filter from '../Filter/Filter';
-import ContactList from '../ContactList/ContactList';
-import { nanoid } from 'nanoid';
 import css from './App.module.css';
+import Searchbar from '../Searchbar/Searchbar';
+import ImageGallery from '../ImageGallery/ImageGallery';
+import Button from '../Button/Button';
+import getImages from '../Service/Api';
+import Modal from '../Modal/Modal';
+import Loader from '../Loader/Loader';
 
 class App extends Component {
   state = {
-    contacts: [
-      { id: 'id-1', name: 'Rosie Simpson', number: '459-12-56' },
-      { id: 'id-2', name: 'Hermione Kline', number: '443-89-12' },
-      { id: 'id-3', name: 'Eden Clements', number: '645-17-79' },
-      { id: 'id-4', name: 'Annie Copeland', number: '227-91-26' },
-    ],
-    filter: '',
+    images: [],
+    searchText: '',
+    page: 1,
+    isVisible: false,
+    showModal: false,
+    loading: false,
   };
-
-  addContact = (name, number) => {
-    const contact = {
-      id: nanoid(),
-      name,
-      number,
-    };
-
-    const findContact = this.state.contacts.find(contact =>
-      contact.name.toLowerCase().includes(name.toLowerCase())
-    );
-
-    findContact
-      ? alert(`${name} is already in contact`)
-      : this.setState(({ contacts }) => ({ contacts: [contact, ...contacts] }));
-  };
-
-  deleteContact = id => {
+  toggleModal = id => {
     this.setState(prevState => ({
-      contacts: prevState.contacts.filter(contact => contact.id !== id),
+      showModal: !prevState.showModal,
+      id: id,
     }));
   };
-  changeFilter = e => {
-    this.setState({ filter: e.currentTarget.value });
+  handelSubmitForm = text => {
+    this.setState({ searchText: text, page: 1, isVisible: false, images: [] });
   };
-  getVisibleContacts = () => {
-    const normalizedFilter = this.state.filter.toLowerCase();
-    return this.state.contacts.filter(contact =>
-      contact.name.toLowerCase().includes(normalizedFilter)
-    );
+  loadMore = () => {
+    this.setState(prevState => ({
+      page: prevState.page + 1,
+    }));
   };
+  getPhotos = async (searchText, page) => {
+    this.setState({ loading: true });
+    try {
+      const data = await getImages(searchText, page);
+      const limit = data.hits.length < !1 || data.hits.length >= 12;
+      this.setState(prevState => ({
+        images: [...prevState.images, ...data.hits],
+        isVisible: limit,
+      }));
+    } catch (error) {
+      console.log('error:', error);
+    } finally {
+      this.setState({ loading: false });
+    }
+  };
+  closeModal = () => {
+    this.setState(prevState => ({
+      showModal: !prevState.showModal,
+    }));
+  };
+  componentDidUpdate(prevProps, prevState) {
+    const { searchText, page } = this.state;
+    if (prevState.searchText !== searchText || prevState.page !== page) {
+      this.getPhotos(searchText, page);
+    }
+  }
+
   render() {
-    const visibleContacts = this.getVisibleContacts();
+    const { loading, images, isVisible, showModal, id } = this.state;
     return (
       <div className={css.container}>
-        <h1 className={css.title}>Phonebook</h1>
-        <ContactForm onSubmit={this.addContact} />
-        <h2 className={css.preTitle}>Contacts</h2>
-        <Filter filter={this.state.filter} onChange={this.changeFilter} />
-        <ContactList
-          contacts={visibleContacts}
-          onDeleteContact={this.deleteContact}
-        />
+        <Searchbar onSubmit={this.handelSubmitForm} />
+        {loading && <Loader />}
+        <ImageGallery images={images} onClick={this.toggleModal} />
+        {isVisible && <Button click={this.loadMore} />}
+        {showModal && (
+          <Modal images={images} id={id} onClose={this.closeModal} />
+        )}
       </div>
     );
   }
 }
+
 export default App;
