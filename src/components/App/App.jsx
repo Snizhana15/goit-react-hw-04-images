@@ -3,7 +3,7 @@ import css from './App.module.css';
 import Searchbar from '../Searchbar/Searchbar';
 import ImageGallery from '../ImageGallery/ImageGallery';
 import Button from '../Button/Button';
-import getImages from '../Service/Api';
+import getImages from '../../service/Api';
 import Modal from '../Modal/Modal';
 import Loader from '../Loader/Loader';
 
@@ -16,6 +16,12 @@ class App extends Component {
     showModal: false,
     loading: false,
   };
+  componentDidUpdate(prevProps, prevState) {
+    const { searchText, page } = this.state;
+    if (prevState.searchText !== searchText || prevState.page !== page) {
+      this.getPhotos(searchText, page);
+    }
+  }
   toggleModal = id => {
     this.setState(prevState => ({
       showModal: !prevState.showModal,
@@ -50,13 +56,6 @@ class App extends Component {
       showModal: !prevState.showModal,
     }));
   };
-  componentDidUpdate(prevProps, prevState) {
-    const { searchText, page } = this.state;
-    if (prevState.searchText !== searchText || prevState.page !== page) {
-      this.getPhotos(searchText, page);
-    }
-  }
-
   render() {
     const { loading, images, isVisible, showModal, id } = this.state;
     return (
