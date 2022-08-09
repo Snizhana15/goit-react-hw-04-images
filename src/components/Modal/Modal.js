@@ -9,14 +9,14 @@ const Modal = ({ images, id, onClose }) => {
     return () => {
       window.removeEventListener('keydown', handleEsc);
     };
-  }, []);
-  const handleEsc = evt => {
-    if (evt.code === 'Escape') {
+  });
+  const handleBackdropClick = event => {
+    if (event.currentTarget === event.target) {
       onClose();
     }
   };
-  const handleBackdropClick = event => {
-    if (event.currentTarget === event.target) {
+  const handleEsc = evt => {
+    if (evt.code === 'Escape') {
       onClose();
     }
   };
