@@ -1,4 +1,4 @@
-import React, { Component } from 'react';
+import { useState, useEffect } from 'react';
 import css from './App.module.css';
 import Searchbar from '../Searchbar/Searchbar';
 import ImageGallery from '../ImageGallery/ImageGallery';
@@ -7,69 +7,57 @@ import getImages from '../../service/Api';
 import Modal from '../Modal/Modal';
 import Loader from '../Loader/Loader';
 
-class App extends Component {
-  state = {
-    images: [],
-    searchText: '',
-    page: 1,
-    isVisible: false,
-    showModal: false,
-    loading: false,
-  };
-  componentDidUpdate(prevProps, prevState) {
-    const { searchText, page } = this.state;
-    if (prevState.searchText !== searchText || prevState.page !== page) {
-      this.getPhotos(searchText, page);
-    }
-  }
-  toggleModal = id => {
-    this.setState(prevState => ({
-      showModal: !prevState.showModal,
-      id: id,
-    }));
-  };
-  handelSubmitForm = text => {
-    this.setState({ searchText: text, page: 1, isVisible: false, images: [] });
-  };
-  loadMore = () => {
-    this.setState(prevState => ({
-      page: prevState.page + 1,
-    }));
-  };
-  getPhotos = async (searchText, page) => {
-    this.setState({ loading: true });
+const App = () => {
+  const [images, setImages] = useState([]);
+  const [searchText, setSearchText] = useState('');
+  const [page, setPage] = useState(1);
+  const [isVisible, setIsVisible] = useState(false);
+  const [showModal, setShowModal] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [id, setId] = useState('');
+
+  useEffect(() => {
+    getPhotos(searchText, page);
+  }, [searchText, page]);
+
+  const getPhotos = async (searchText, page) => {
+    setLoading(true);
     try {
       const data = await getImages(searchText, page);
       const limit = data.hits.length < !1 || data.hits.length >= 12;
-      this.setState(prevState => ({
-        images: [...prevState.images, ...data.hits],
-        isVisible: limit,
-      }));
+      setImages(prevState => [...prevState, ...data.hits]);
+      setIsVisible(limit);
     } catch (error) {
       console.log('error:', error);
     } finally {
-      this.setState({ loading: false });
+      setLoading(false);
     }
   };
-  closeModal = () => {
-    this.setState(prevState => ({
-      showModal: !prevState.showModal,
-    }));
+  const toggleModal = id => {
+    setShowModal(!showModal);
+    setId(id);
   };
-  render() {
-    const { loading, images, isVisible, showModal, id } = this.state;
-    return (
-      <div className={css.container}>
-        <Searchbar onSubmit={this.handelSubmitForm} />
-        {loading && <Loader />}
-        <ImageGallery images={images} onClick={this.toggleModal} />
-        {isVisible && <Button click={this.loadMore} />}
-        {showModal && (
-          <Modal images={images} id={id} onClose={this.closeModal} />
-        )}
-      </div>
-    );
-  }
-}
+  const handelSubmitForm = text => {
+    setSearchText(text);
+    setPage(1);
+    setIsVisible(false);
+    setImages([]);
+  };
+  const loadMore = () => {
+    setPage(prevState => prevState + 1);
+  };
+  const closeModal = () => {
+    setShowModal(!showModal);
+  };
+  return (
+    <div className={css.container}>
+      <Searchbar onSubmit={handelSubmitForm} />
+      {loading && <Loader />}
+      <ImageGallery images={images} onClick={toggleModal} />
+      {isVisible && <Button click={loadMore} />}
+      {showModal && <Modal images={images} id={id} onClose={closeModal} />}
+    </div>
+  );
+};
 
 export default App;

@@ -1,44 +1,39 @@
-import React, { Component } from 'react';
+import { useEffect } from 'react';
 import css from './Modal.module.css';
 import PropTypes from 'prop-types';
 
-class Modal extends Component {
-  componentDidMount() {
-    window.addEventListener('keydown', this.handleEsc);
-  }
+const Modal = ({ images, id, onClose }) => {
+  useEffect(() => {
+    window.addEventListener('keydown', handleEsc);
 
-  componentWillUnmount() {
-    window.removeEventListener('keydown', this.handleEsc);
-  }
-
-  handleEsc = evt => {
+    return () => {
+      window.removeEventListener('keydown', handleEsc);
+    };
+  }, []);
+  const handleEsc = evt => {
     if (evt.code === 'Escape') {
-      this.props.onClose();
+      onClose();
     }
   };
-
-  handleBackdropClick = event => {
+  const handleBackdropClick = event => {
     if (event.currentTarget === event.target) {
-      this.props.onClose();
+      onClose();
     }
   };
-  findImage = () => {
-    const { images, id } = this.props;
+  const findImage = () => {
     if (id) {
       return images.find(image => image.id === id);
     }
   };
-  render() {
-    const findImage = this.findImage();
-    return (
-      <div className={css.overlay} onClick={this.handleBackdropClick}>
-        <div className={css.modal}>
-          <img src={findImage.largeImageURL} alt="" />
-        </div>
+  const image = findImage();
+  return (
+    <div className={css.overlay} onClick={handleBackdropClick}>
+      <div className={css.modal}>
+        <img src={image.largeImageURL} alt="" />
       </div>
-    );
-  }
-}
+    </div>
+  );
+};
 Modal.propTypes = {
   images: PropTypes.array,
   id: PropTypes.number,

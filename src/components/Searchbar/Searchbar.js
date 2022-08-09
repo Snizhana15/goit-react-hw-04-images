@@ -1,45 +1,40 @@
-import React, { Component } from 'react';
+import { useState } from 'react';
 import css from './Searchbar.module.css';
 import { ImSearch } from 'react-icons/im';
 import PropTypes from 'prop-types';
 
-class Searchbar extends Component {
-  state = {
-    searchText: '',
+const Searchbar = ({ onSubmit }) => {
+  const [searchText, setSearchText] = useState('');
+  const handelTextChange = e => {
+    setSearchText(e.currentTarget.value.toLowerCase());
   };
-  handelTextChange = e => {
-    this.setState({ searchText: e.currentTarget.value.toLowerCase() });
-  };
-  handelSubmit = e => {
-    const { searchText } = this.state;
+  const handelSubmit = e => {
     e.preventDefault();
     if (searchText.trim() === '') {
       return;
     }
-    this.props.onSubmit(searchText);
-    this.setState({ searchText: '' });
+    onSubmit(searchText);
+    setSearchText('');
   };
-  render() {
-    const { searchText } = this.state;
-    return (
-      <header className={css.searchbar}>
-        <form className={css.form} onSubmit={this.handelSubmit}>
-          <button type="submit" className={css.button}>
-            <ImSearch />
-          </button>
+  return (
+    <header className={css.searchbar}>
+      <form className={css.form} onSubmit={handelSubmit}>
+        <button type="submit" className={css.button}>
+          <ImSearch />
+        </button>
 
-          <input
-            className={css.input}
-            type="text"
-            placeholder="Search images and photos"
-            value={searchText}
-            onChange={this.handelTextChange}
-          />
-        </form>
-      </header>
-    );
-  }
-}
+        <input
+          className={css.input}
+          type="text"
+          placeholder="Search images and photos"
+          value={searchText}
+          onChange={handelTextChange}
+        />
+      </form>
+    </header>
+  );
+};
+
 Searchbar.propTypes = {
   onSubmit: PropTypes.func,
 };
