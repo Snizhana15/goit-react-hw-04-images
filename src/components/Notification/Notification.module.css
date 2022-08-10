@@ -1,0 +1,12 @@
+.message {
+  margin-right: auto;
+  margin-left: auto;
+}
+.text {
+  font-weight: 700;
+  font-size: 30px;
+  color: blue;
+  text-transform: uppercase;
+  align-items: center;
+  text-align: center;
+}

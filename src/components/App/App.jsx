@@ -6,6 +6,7 @@ import Button from '../Button/Button';
 import getImages from '../../service/Api';
 import Modal from '../Modal/Modal';
 import Loader from '../Loader/Loader';
+import Notification from 'components/Notification/Notification';
 
 const App = () => {
   const [images, setImages] = useState([]);
@@ -53,6 +54,7 @@ const App = () => {
     <div className={css.container}>
       <Searchbar onSubmit={handelSubmitForm} />
       {loading && <Loader />}
+      {images.length === 0 && loading === false && <Notification />}
       <ImageGallery images={images} onClick={toggleModal} />
       {isVisible && <Button click={loadMore} />}
       {showModal && <Modal images={images} id={id} onClose={closeModal} />}
